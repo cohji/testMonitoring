@@ -6,11 +6,23 @@ document.addEventListener("deviceready", function () {
         }
         console.log(name, obj);
         var obj_str = JSON.stringify(obj);
-        $.post( 'http://ptsv2.com/t/b5h0f-1535356243/post', obj_str )
+        // $.post( 'http://ptsv2.com/t/b5h0f-1535356243/post', obj_str )
+
         // var xhr = new XMLHttpRequest();
         // xhr.open("POST", 'http://ptsv2.com/t/b5h0f-1535356243/post', true);
         // xhr.setRequestHeader('Content-Type', 'application/json');
         // xhr.send(obj_str);
+        $.ajax({
+            type: "POST",
+            url:"http://ptsv2.com/t/b5h0f-1535356243/post",
+            data: obj_str,
+            success: function(json) {
+                console.log('google_apps ajax success');
+            },
+            error: function() {
+                console.log('google_apps ajax error');
+            }
+        });
     }
 
     var delegate = new cordova.plugins.locationManager.Delegate();
