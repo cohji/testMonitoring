@@ -1,61 +1,54 @@
-function onDeviceReady() {
-    // 必要な権限を取得
-    // 通知の権限
-    cordova.plugins.notification.local.requestPermission(function () {
-        console.log("Notification permitted.")
-    });
-    
-    // 位置情報を取得。常に取得とします。
-    cordova.plugins.locationManager.requestAlwaysAuthorization();
-    
-    // delegateの作成と設定
+document.addEventListener("deviceready", function () {
+
+    function lan_log(name, obj) {
+        if(typeof(obj) == typeof(undefined)) {
+            obj = {};
+        }
+        console.log(name, obj);
+        var obj_str = JSON.stringify(obj);
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", 'http://ptsv2.com/t/b5h0f-1535356243/post', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(obj_str);
+    }
+
     var delegate = new cordova.plugins.locationManager.Delegate();
-    delegate.didDetermineStateForRegion = function(pluginResult) {
-        console.log('didDetermineStateForRegion', pluginResult);
-    }
-    delegate.didStartMonitoringForRegion = function(pluginResult) {
-        console.log('didStartMonitoringForRegion', pluginResult);
-    }
-    
-    delegate.didRangeBeaconsInRegion = function(pluginResult) {
-        console.log('didRangeBeaconsInRegion', pluginResult);
-    }
-    
+
+    delegate.didDetermineStateForRegion = function (pluginResult) {
+        lan_log('didDetermineStateForRegion: ', pluginResult);
+    };
+
+    delegate.didStartMonitoringForRegion = function (pluginResult) {
+        lan_log('didStartMonitoringForRegion:', pluginResult);
+    };
+
+    delegate.didRangeBeaconsInRegion = function (pluginResult) {
+        lan_log('didRangeBeaconsInRegion: ', pluginResult);
+    };
+
     delegate.didEnterRegion = function(pluginResult) {
-        console.log('didEnterRegion', pluginResult);
-        cordova.plugins.notification.local.schedule({
-            id: 101,
-            title: "didEnterRegion",
-            text: "didEnterRegion",
-            trigger: {at: new Date(new Date().getTime() + (1 * 1000))}
-        });
-    }
+        lan_log('Entered region: ', pluginResult);
+    };
+
     delegate.didExitRegion = function(pluginResult) {
-        console.log('didExitRegion', pluginResult);
-        cordova.plugins.notification.local.schedule({
-            id: 100,
-            title: "didExitRegion",
-            text: "didExitRegion",
-            trigger: {at: new Date(new Date().getTime() + (1 * 1000))}
-        });
-    }
-    
+        lan_log('Exited region: ', pluginResult);
+    };
+
+    var uuid = 'B9407F30-F5F8-466E-AFF9-25556B57FE6D';
+    var major = '0';
+    var minor = '0';
+    var identifier = 'test';
+    var beaconRegion = new cordova.plugins.locationManager.BeaconRegion(identifier, uuid, major, minor, true);
+
+    lan_log("Going to monitor region now...");
     cordova.plugins.locationManager.setDelegate(delegate);
-    
-    // 監視するビーコンの作成
-    var uuid = 'B9407F30-F5F8-466E-AFF9-25556B57FE6D'; //ビーコンのUUID
-    var identifier = 'test.beacon.xxxx'; // 任意のID
-    var beaconRegion = new cordova.plugins.locationManager.BeaconRegion(identifier, uuid, 0, 0);
-    beaconRegion.notifyEntryStateOnDisplay = true;
 
-    // 監視の開始
-    // cordova.plugins.locationManager.startRangingBeaconsInRegion(beaconRegion)
-    //     .fail(console.error)
-    //     .done();
-        
+    // required in iOS 8+
+    cordova.plugins.locationManager.requestWhenInUseAuthorization();
+    cordova.plugins.locationManager.requestAlwaysAuthorization();
+    // or cordova.plugins.locationManager.requestAlwaysAuthorization()
+
     cordova.plugins.locationManager.startMonitoringForRegion(beaconRegion)
-        .fail(function(e) { console.error(e); })
+        .fail(function(e) { lan_log("Error while trying to start monitoring",e); })
         .done();
-}
-
-document.addEventListener('deviceready', onDeviceReady, false);
+});
